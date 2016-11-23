@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import wave
+import base64
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
@@ -58,31 +59,44 @@ class FLACConverter(object):
 
 
 class SpeechRecognizer(object):
-    def __init__(self, language="en", rate=44100, retries=3, api_key=GOOGLE_SPEECH_API_KEY):
+    def __init__(self, language="en", rate=44100, retries=3, api_key=GOOGLE_SPEECH_API_KEY, phrases=[]):
         self.language = language
         self.rate = rate
         self.api_key = api_key
         self.retries = retries
+        self.phrases = phrases
 
     def __call__(self, data):
         try:
             for i in range(self.retries):
-                url = GOOGLE_SPEECH_API_URL.format(lang=self.language, key=self.api_key)
-                headers = {"Content-Type": "audio/x-flac; rate=%d" % self.rate}
-
+                url = GOOGLE_SPEECH_API_URL.format(key=self.api_key)
+                headers = {"Content-Type": "application/json"}
+                print self.phrases
+                payload = {
+                    "config": {
+                        "encoding": "FLAC",
+                        "sampleRate": self.rate,
+                        "languageCode": self.language,
+                        "maxAlternatives": 0,
+                        "profanityFilter": False,
+                        "speechContext": {
+                            "phrases": self.phrases
+                        }
+                    },
+                    "audio": {
+                        "content": base64.b64encode(data)
+                    }
+                }
                 try:
-                    resp = requests.post(url, data=data, headers=headers)
+                    resp = requests.post(url, data=json.dumps(payload), headers=headers)
                 except requests.exceptions.ConnectionError:
                     continue
 
-                for line in resp.content.split("\n"):
-                    try:
-                        line = json.loads(line)
-                        line = line['result'][0]['alternative'][0]['transcript']
-                        return line[:1].upper() + line[1:]
-                    except:
-                        # no result
-                        continue
+                try:
+                    return json.loads(resp.content)['results'][0]['alternatives'][0]['transcript']
+                except:
+                    # no result
+                    continue
 
         except KeyboardInterrupt:
             return
@@ -198,6 +212,7 @@ def main():
                         help="The Google Translate API key to be used. (Required for subtitle translation)")
     parser.add_argument('--list-formats', help="List all available subtitle formats", action='store_true')
     parser.add_argument('--list-languages', help="List all available source/destination languages", action='store_true')
+    parser.add_argument('-P', '--phrases', help="Include known phrases and words to generate more accurate results", type=str, nargs='+', default=[])
 
     args = parser.parse_args()
 
@@ -236,7 +251,8 @@ def main():
 
     pool = multiprocessing.Pool(args.concurrency)
     converter = FLACConverter(source_path=audio_filename)
-    recognizer = SpeechRecognizer(language=args.src_language, rate=audio_rate, api_key=GOOGLE_SPEECH_API_KEY)
+    print args.phrases
+    recognizer = SpeechRecognizer(language=args.src_language, rate=audio_rate, api_key=GOOGLE_SPEECH_API_KEY, phrases=args.phrases)
 
     transcripts = []
     if regions:

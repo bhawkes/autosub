@@ -1,5 +1,5 @@
-GOOGLE_SPEECH_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
-GOOGLE_SPEECH_API_URL = "http://www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
+GOOGLE_SPEECH_API_KEY = "***Google Cloud Speech API KEY***"
+GOOGLE_SPEECH_API_URL = "https://content-speech.googleapis.com/v1beta1/speech:syncrecognize?alt=json&key={key}"
 
 LANGUAGE_CODES = {
     'af': 'Afrikaans',
@@ -17,6 +17,8 @@ LANGUAGE_CODES = {
     'de': 'German',
     'el': 'Greek',
     'en': 'English',
+	'en-GB': 'English (Great Britain)',
+	'en-US': 'English (United States)',
     'eo': 'Esperanto',
     'es': 'Spanish',
     'et': 'Estonian',
