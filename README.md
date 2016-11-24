@@ -37,6 +37,9 @@ optional arguments:
   --list-formats        List all available subtitle formats
   --list-src-languages  List all available source languages
   --list-dst-languages  List all available destination languages
+  -P PHRASES [PHRASES ...], --phrases PHRASES [PHRASES ...]
+                        Include known phrases and words to generate more accurate
+                        results
 ```
 
 ### License
