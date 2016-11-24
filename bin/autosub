@@ -71,7 +71,6 @@ class SpeechRecognizer(object):
             for i in range(self.retries):
                 url = GOOGLE_SPEECH_API_URL.format(key=self.api_key)
                 headers = {"Content-Type": "application/json"}
-                print self.phrases
                 payload = {
                     "config": {
                         "encoding": "FLAC",
@@ -251,7 +250,6 @@ def main():
 
     pool = multiprocessing.Pool(args.concurrency)
     converter = FLACConverter(source_path=audio_filename)
-    print args.phrases
     recognizer = SpeechRecognizer(language=args.src_language, rate=audio_rate, api_key=GOOGLE_SPEECH_API_KEY, phrases=args.phrases)
 
     transcripts = []
